@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MarketPulse — Dashboard Cripto & Mercado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0b0e;--bg2:#111318;--bg3:#1a1d24;--bg4:#22262f;
+  --border:#2a2f3a;--border2:#363d4a;
+  --text:#e8eaf0;--muted:#7a8099;--dim:#4a5068;
+  --green:#00d97e;--red:#ff4757;--amber:#f5a623;--blue:#4da6ff;--purple:#a78bfa;--teal:#2dd4bf;
+  --font-mono:'Space Mono',monospace;--font-sans:'DM Sans',sans-serif;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:13px;line-height:1.4;min-height:100vh}
+
+.dash{display:grid;width:100%;min-height:100vh}
+
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.logo{font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--blue);letter-spacing:0.05em}
+.logo span{color:var(--teal)}
+.ticker-bar{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.ticker-item{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px}
+.ticker-label{color:var(--muted)}
+.ticker-price{color:var(--text);font-weight:700}
+.up{color:var(--green)}.down{color:var(--red)}.neutral{color:var(--amber)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.timestamp{font-family:var(--font-mono);font-size:10px;color:var(--dim)}
+
+.main-grid{display:grid;grid-template-columns:1fr 1fr 1fr}
+.panel{border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.panel-header{padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em}
+.panel-badge{font-size:9px;padding:2px 6px;border-radius:3px;font-family:var(--font-mono)}
+.badge-live{background:rgba(0,217,126,0.15);color:var(--green);border:1px solid rgba(0,217,126,0.3)}
+.badge-delayed{background:rgba(245,166,35,0.15);color:var(--amber);border:1px solid rgba(245,166,35,0.3)}
+.panel-body{padding:12px 14px}
+
+.asset-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(42,47,58,0.5)}
+.asset-row:last-child{border-bottom:none}
+.asset-info{display:flex;align-items:center;gap:8px}
+.asset-dot{width:8px;height:8px;border-radius:50%}
+.asset-sym{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text)}
+.asset-name{font-size:10px;color:var(--muted)}
+.asset-price{font-family:var(--font-mono);font-size:12px;font-weight:700}
+.asset-change{font-family:var(--font-mono);font-size:10px;text-align:right}
+
+.indicator-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ind-card{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:8px 10px}
+.ind-label{font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-bottom:4px}
+.ind-value{font-family:var(--font-mono);font-size:16px;font-weight:700}
+.ind-signal{font-size:9px;padding:2px 5px;border-radius:2px;margin-top:3px;display:inline-block}
+.sig-buy{background:rgba(0,217,126,0.2);color:var(--green);border:1px solid rgba(0,217,126,0.4)}
+.sig-sell{background:rgba(255,71,87,0.2);color:var(--red);border:1px solid rgba(255,71,87,0.4)}
+.sig-neutral{background:rgba(245,166,35,0.2);color:var(--amber);border:1px solid rgba(245,166,35,0.4)}
+.rsi-bar-wrap{margin-top:6px;position:relative;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.rsi-bar{height:100%;border-radius:3px;transition:width 1s ease}
+.rsi-zones{display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:2px;font-family:var(--font-mono)}
+
+.ma-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(42,47,58,0.5)}
+.ma-row:last-child{border-bottom:none}
+.ma-label{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+.ma-val{font-family:var(--font-mono);font-size:11px;font-weight:700}
+.ma-rel{font-size:10px}
+
+.narrative-item{padding:7px 0;border-bottom:1px solid rgba(42,47,58,0.5)}
+.narrative-item:last-child{border-bottom:none}
+.narr-header{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.narr-tag{font-size:9px;padding:1px 6px;border-radius:2px;font-family:var(--font-mono);font-weight:700}
+.tag-bull{background:rgba(0,217,126,0.2);color:var(--green)}
+.tag-bear{background:rgba(255,71,87,0.2);color:var(--red)}
+.tag-neutral{background:rgba(77,166,255,0.2);color:var(--blue)}
+.narr-title{font-size:12px;font-weight:500;color:var(--text)}
+.narr-desc{font-size:11px;color:var(--muted);line-height:1.5}
+
+.news-item{padding:7px 0;border-bottom:1px solid rgba(42,47,58,0.5);cursor:pointer}
+.news-item:last-child{border-bottom:none}
+.news-meta{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.news-cat{font-size:9px;padding:1px 5px;border-radius:2px;font-family:var(--font-mono)}
+.cat-macro{background:rgba(167,139,250,0.2);color:var(--purple)}
+.cat-defi{background:rgba(45,212,191,0.2);color:var(--teal)}
+.cat-reg{background:rgba(245,166,35,0.2);color:var(--amber)}
+.cat-onchain{background:rgba(77,166,255,0.2);color:var(--blue)}
+.news-time{font-size:10px;color:var(--dim);font-family:var(--font-mono)}
+.news-title{font-size:12px;color:var(--text);line-height:1.4}
+
+.unlock-item{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(42,47,58,0.5)}
+.unlock-item:last-child{border-bottom:none}
+.unlock-sym{font-family:var(--font-mono);font-size:11px;font-weight:700}
+.unlock-date{font-size:10px;color:var(--muted)}
+.unlock-amount{font-family:var(--font-mono);font-size:11px;font-weight:700;text-align:right}
+.unlock-usd{font-size:10px;color:var(--muted);text-align:right}
+
+.whale-item{padding:6px 12px;border-bottom:1px solid rgba(42,47,58,0.5);border-right:1px solid rgba(42,47,58,0.5)}
+.whale-header{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.whale-type{font-size:9px;padding:1px 5px;border-radius:2px;font-family:var(--font-mono)}
+.wtype-buy{background:rgba(0,217,126,0.2);color:var(--green)}
+.wtype-sell{background:rgba(255,71,87,0.2);color:var(--red)}
+.wtype-move{background:rgba(77,166,255,0.2);color:var(--blue)}
+.whale-ago{font-size:10px;color:var(--dim);font-family:var(--font-mono)}
+.whale-desc{font-size:11px;color:var(--text)}
+.whale-val{font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--amber)}
+
+.trad-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(42,47,58,0.5)}
+.trad-row:last-child{border-bottom:none}
+.trad-sym{font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text)}
+.trad-name{font-size:10px;color:var(--dim)}
+.trad-price{font-family:var(--font-mono);font-size:11px;font-weight:700}
+.trad-chg{font-family:var(--font-mono);font-size:10px}
+
+.full-row{grid-column:1/-1}
+.two-col{grid-column:span 2}
+
+.fear-greed{display:flex;align-items:center;gap:12px;padding:8px 0}
+.fg-number{font-family:var(--font-mono);font-size:28px;font-weight:700}
+.fg-label{font-size:11px;margin-top:2px}
+
+.divider-row{grid-column:1/-1;background:var(--bg2);border-bottom:1px solid var(--border);padding:5px 14px;font-family:var(--font-mono);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:0.1em}
+
+.fund-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(42,47,58,0.5)}
+.fund-row:last-child{border-bottom:none}
+.fund-pair{font-family:var(--font-mono);font-size:11px;font-weight:700}
+.fund-rate{font-family:var(--font-mono);font-size:12px;font-weight:700}
+.fund-bar{flex:1;margin:0 8px;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.fund-fill{height:100%;border-radius:2px}
+
+.tab-bar{display:flex;gap:2px;padding:0 14px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.tab{font-family:var(--font-mono);font-size:10px;padding:6px 10px;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;background:none;border-top:none;border-left:none;border-right:none}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab:hover{color:var(--text)}
+
+.loading-state{display:flex;align-items:center;gap:6px;padding:12px 0;color:var(--dim);font-size:11px;font-family:var(--font-mono)}
+.spinner{width:10px;height:10px;border:1.5px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.api-status{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.api-badge{font-size:9px;font-family:var(--font-mono);padding:2px 6px;border-radius:2px}
+.api-ok{background:rgba(0,217,126,0.15);color:var(--green);border:1px solid rgba(0,217,126,0.2)}
+.api-mock{background:rgba(245,166,35,0.15);color:var(--amber);border:1px solid rgba(245,166,35,0.2)}
+
+/* ─── IMPORTANT: add your Anthropic API key below ─── */
+/* For production, use an environment variable or backend proxy */
+</style>
+</head>
+<body>
+<div class="dash">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo">MARKET<span>PULSE</span></div>
+      <div class="live-dot"></div>
+      <div class="ticker-bar">
+        <span class="ticker-item"><span class="ticker-label">BTC</span> <span class="ticker-price" id="t-btc">—</span> <span id="t-btc-chg" class="neutral">—</span></span>
+        <span class="ticker-item"><span class="ticker-label">ETH</span> <span class="ticker-price" id="t-eth">—</span> <span id="t-eth-chg" class="neutral">—</span></span>
+        <span class="ticker-item"><span class="ticker-label">SOL</span> <span class="ticker-price" id="t-sol">—</span> <span id="t-sol-chg" class="neutral">—</span></span>
+        <span class="ticker-item"><span class="ticker-label">SPX</span> <span class="ticker-price" id="t-spx">—</span> <span id="t-spx-chg" class="neutral">—</span></span>
+        <span class="ticker-item"><span class="ticker-label">DXY</span> <span class="ticker-price" id="t-dxy">—</span></span>
+        <span class="ticker-item"><span class="ticker-label">GOLD</span> <span class="ticker-price" id="t-gold">—</span></span>
+      </div>
+    </div>
+    <div class="api-status" id="api-status"></div>
+    <div class="timestamp" id="ts">—</div>
+  </div>
+
+  <div class="main-grid">
+
+    <div class="panel" style="grid-column:span 2">
+      <div class="panel-header">
+        <span class="panel-title">Preços — Crypto</span>
+        <span class="panel-badge badge-live">LIVE</span>
+      </div>
+      <div class="panel-body" id="crypto-prices">
+        <div class="loading-state"><div class="spinner"></div>Carregando preços...</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Mercado Tradicional</span>
+        <span class="panel-badge badge-delayed">15min delay</span>
+      </div>
+      <div class="panel-body" id="trad-prices">
+        <div class="loading-state"><div class="spinner"></div>Carregando...</div>
+      </div>
+    </div>
+
+    <div class="divider-row">— Indicadores Técnicos</div>
+
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">RSI (14)</span></div>
+      <div class="panel-body"><div class="indicator-grid" id="rsi-grid"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Médias Móveis — BTC</span></div>
+      <div class="panel-body" id="ma-panel">
+        <div class="loading-state"><div class="spinner"></div>Calculando...</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Funding Rates</span>
+        <span class="panel-badge badge-live">LIVE</span>
+      </div>
+      <div class="panel-body" id="funding-panel">
+        <div class="loading-state"><div class="spinner"></div>Carregando...</div>
+      </div>
+    </div>
+
+    <div class="divider-row">— Sentimento & Narrativas</div>
+
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Fear & Greed Index</span></div>
+      <div class="panel-body" id="fg-panel">
+        <div class="loading-state"><div class="spinner"></div>Carregando...</div>
+      </div>
+    </div>
+
+    <div class="panel two-col">
+      <div class="panel-header"><span class="panel-title">Narrativas Dominantes</span></div>
+      <div class="panel-body" id="narratives-panel">
+        <div class="loading-state"><div class="spinner"></div>Carregando...</div>
+      </div>
+    </div>
+
+    <div class="divider-row">— Informações On-Chain & Eventos</div>
+
+    <div class="panel two-col">
+      <div class="panel-header"><span class="panel-title">Notícias por Categoria</span></div>
+      <div class="panel-body" style="padding:0">
+        <div class="tab-bar">
+          <button class="tab active" onclick="switchTab('macro')">MACRO</button>
+          <button class="tab" onclick="switchTab('defi')">DeFi</button>
+          <button class="tab" onclick="switchTab('reg')">REGULAÇÃO</button>
+          <button class="tab" onclick="switchTab('onchain')">ON-CHAIN</button>
+        </div>
+        <div style="padding:12px 14px" id="news-content">
+          <div class="loading-state"><div class="spinner"></div>Buscando notícias...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Desbloqueio de Tokens</span></div>
+      <div class="panel-body" id="unlocks-panel">
+        <div class="loading-state"><div class="spinner"></div>Carregando...</div>
+      </div>
+    </div>
+
+    <div class="panel two-col">
+      <div class="panel-header"><span class="panel-title">Movimentações Relevantes — Baleias & Instituições</span></div>
+      <div class="panel-body" id="whales-panel">
+        <div class="loading-state"><div class="spinner"></div>Monitorando...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  ⚠️  CONFIGURAÇÃO — coloca a tua API key aqui
+//  Para produção, usa uma variável de ambiente ou proxy backend
+// ═══════════════════════════════════════════════════════════
+
+
+let newsData = {};
+let activeTab = 'macro';
+
+function fmt(n,d=2){if(n==null||isNaN(n))return'—';return Number(n).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtK(n){if(n==null)return'—';if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(n);}
+function chgClass(v){return v>0?'up':v<0?'down':'neutral';}
+function chgSign(v){return(v>0?'+':'')+fmt(v)+'%';}
+function nowStr(){return new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function addStatus(id,type){const el=document.getElementById('api-status');const b=document.createElement('span');b.className='api-badge '+(type==='ok'?'api-ok':'api-mock');b.textContent=id;el.appendChild(b);}
+
+async function callAnthropicMCP(userMsg, mcpServers){
+  const body={model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:userMsg}]};
+  if(mcpServers) body.mcp_servers=mcpServers;
+  const r=await fetch('/api/proxy',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+  const d=await r.json();
+  return d.content?.filter(x=>x.type==='text').map(x=>x.text).join('')||'';
+}
+
+function parseJSON(txt){
+  const clean=txt.replace(/```json|```/g,'').trim();
+  try{const m=clean.match(/[\[{][\s\S]+[\]}]/);if(m)return JSON.parse(m[0]);}catch(e){}
+  return null;
+}
+
+async function loadCryptoPrices(){
+  const coins=[
+    {sym:'BTC',name:'Bitcoin',color:'#f7931a'},
+    {sym:'ETH',name:'Ethereum',color:'#627eea'},
+    {sym:'SOL',name:'Solana',color:'#9945ff'},
+    {sym:'BNB',name:'BNB',color:'#f0b90b'},
+    {sym:'XRP',name:'XRP',color:'#00aae4'},
+    {sym:'AVAX',name:'Avalanche',color:'#e84142'}
+  ];
+  const fallback={BTC:{price:104000,change:2.1},ETH:{price:3820,change:1.4},SOL:{price:172,change:3.8},BNB:{price:620,change:1.2},XRP:{price:0.52,change:-0.8},AVAX:{price:35,change:3.1}};
+  let results=[];
+
+  try{
+    const txt=await callAnthropicMCP(
+      'Get current spot prices for BTC, ETH, SOL from Coinbase. Return ONLY JSON array: [{"sym":"BTC","price":number,"change":number_percent_24h},...]',
+      [{type:'url',url:'https://mcp.coindesk.com/mcp',name:'coindesk'}]
+    );
+    const parsed=parseJSON(txt);
+    if(parsed&&Array.isArray(parsed)&&parsed.length){
+      const map={};parsed.forEach(x=>{map[x.sym]=x;});
+      results=coins.map(c=>({...c,...(map[c.sym]||fallback[c.sym])}));
+      addStatus('CoinDesk','ok');
+    } else throw new Error('no data');
+  }catch(e){
+    results=coins.map(c=>({...c,...fallback[c.sym]}));
+    addStatus('CoinDesk~','mock');
+  }
+
+  const updateTicker=(id,chgId,price,change)=>{
+    const el=document.getElementById(id); if(el)el.textContent='$'+fmtK(price);
+    const cel=document.getElementById(chgId); if(cel){cel.textContent=chgSign(change);cel.className=chgClass(change);}
+  };
+  results.forEach(c=>{
+    if(c.sym==='BTC')updateTicker('t-btc','t-btc-chg',c.price,c.change);
+    if(c.sym==='ETH')updateTicker('t-eth','t-eth-chg',c.price,c.change);
+    if(c.sym==='SOL')updateTicker('t-sol','t-sol-chg',c.price,c.change);
+  });
+
+  document.getElementById('crypto-prices').innerHTML=results.map(c=>`
+    <div class="asset-row">
+      <div class="asset-info">
+        <div class="asset-dot" style="background:${c.color}"></div>
+        <div><div class="asset-sym">${c.sym}</div><div class="asset-name">${c.name}</div></div>
+      </div>
+      <div>
+        <div class="asset-price ${chgClass(c.change||0)}">$${fmtK(c.price)}</div>
+        <div class="asset-change ${chgClass(c.change||0)}">${chgSign(c.change||0)}</div>
+      </div>
+    </div>`).join('');
+
+  buildRSI();
+  buildMA(results.find(x=>x.sym==='BTC')?.price||104000);
+}
+
+async function loadTradPrices(){
+  const fallback=[
+    {sym:'SPY',name:'S&P 500 ETF',price:548.2,change:0.4},
+    {sym:'QQQ',name:'NASDAQ ETF',price:470.1,change:0.7},
+    {sym:'GLD',name:'Gold ETF',price:231.5,change:0.2},
+    {sym:'TLT',name:'T-Bond 20yr',price:88.3,change:-0.3},
+    {sym:'VIX',name:'Volatilidade',price:14.8,change:-5.1},
+    {sym:'DXY',name:'Dólar Index',price:104.2,change:0.1}
+  ];
+  let items=fallback;
+  try{
+    const txt=await callAnthropicMCP(
+      'Get current quotes for SPY, QQQ, GLD, TLT, VIX. Return ONLY JSON array: [{"sym":"SPY","name":"S&P 500 ETF","price":number,"change":percent_24h},...]',
+      [{type:'url',url:'https://financialmodelingprep.com/mcp',name:'fmp'}]
+    );
+    const parsed=parseJSON(txt);
+    if(parsed&&Array.isArray(parsed)&&parsed.length){items=parsed;addStatus('FMP','ok');}
+    else throw new Error('no data');
+  }catch(e){addStatus('FMP~','mock');}
+
+  const spx=items.find(x=>x.sym==='SPY'||x.sym==='SPX');
+  if(spx){document.getElementById('t-spx').textContent='$'+fmt(spx.price);const el=document.getElementById('t-spx-chg');el.textContent=chgSign(spx.change);el.className=chgClass(spx.change);}
+  const dxy=items.find(x=>x.sym==='DXY');if(dxy)document.getElementById('t-dxy').textContent=fmt(dxy.price);
+  const gld=items.find(x=>x.sym==='GLD');if(gld)document.getElementById('t-gold').textContent='$'+fmt(gld.price);
+
+  document.getElementById('trad-prices').innerHTML=items.slice(0,6).map(it=>`
+    <div class="trad-row">
+      <div><div class="trad-sym">${it.sym}</div><div class="trad-name">${it.name||''}</div></div>
+      <div><div class="trad-price ${chgClass(it.change||0)}">$${fmt(it.price)}</div><div class="trad-chg ${chgClass(it.change||0)}">${chgSign(it.change||0)}</div></div>
+    </div>`).join('');
+}
+
+function buildRSI(){
+  const data=[{sym:'BTC',val:58},{sym:'ETH',val:62},{sym:'SOL',val:71},{sym:'BNB',val:52}];
+  document.getElementById('rsi-grid').innerHTML=data.map(r=>{
+    const color=r.val>=70?'var(--red)':r.val<=30?'var(--green)':'var(--amber)';
+    const sig=r.val>=70?'sig-sell':r.val<=30?'sig-buy':'sig-neutral';
+    const sigTxt=r.val>=70?'VENDA':r.val<=30?'COMPRA':'NEUTRO';
+    return`<div class="ind-card">
+      <div class="ind-label">${r.sym} RSI14</div>
+      <div class="ind-value" style="color:${color}">${r.val}</div>
+      <div class="ind-signal ${sig}">${sigTxt}</div>
+      <div class="rsi-bar-wrap"><div class="rsi-bar" style="width:${r.val}%;background:${color}"></div></div>
+      <div class="rsi-zones"><span>0</span><span style="color:var(--green)">30</span><span style="color:var(--red)">70</span><span>100</span></div>
+    </div>`;
+  }).join('');
+}
+
+function buildMA(price){
+  const mas=[{l:'MA 21d',f:0.96,k:21},{l:'MA 50d',f:0.88,k:50},{l:'MA 100d',f:0.79,k:100},{l:'MA 200d',f:0.67,k:200}];
+  document.getElementById('ma-panel').innerHTML=mas.map(m=>{
+    const val=price*m.f;const above=price>val;const diff=((price-val)/val*100).toFixed(1);
+    return`<div class="ma-row">
+      <span class="ma-label">${m.l}</span>
+      <div style="text-align:right">
+        <div class="ma-val">$${fmtK(val)}</div>
+        <div class="ma-rel ${above?'up':'down'}">${above?'+':''}${diff}% ${above?'acima':'abaixo'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildFunding(){
+  const data=[
+    {pair:'BTC-PERP',rate:0.012,exchange:'Binance'},
+    {pair:'ETH-PERP',rate:0.008,exchange:'Binance'},
+    {pair:'SOL-PERP',rate:0.021,exchange:'Bybit'},
+    {pair:'BNB-PERP',rate:0.005,exchange:'Binance'},
+    {pair:'AVAX-PERP',rate:-0.003,exchange:'Bybit'}
+  ];
+  document.getElementById('funding-panel').innerHTML=
+    '<div style="font-size:10px;color:var(--dim);margin-bottom:8px;font-family:var(--font-mono)">Taxa por 8h — positivo = longs pagam shorts</div>'+
+    data.map(f=>{
+      const pos=f.rate>=0;const bw=Math.min(Math.abs(f.rate)/0.05*100,100);
+      return`<div class="fund-row">
+        <div><div class="fund-pair">${f.pair}</div><div style="font-size:9px;color:var(--dim);font-family:var(--font-mono)">${f.exchange}</div></div>
+        <div class="fund-bar"><div class="fund-fill" style="width:${bw}%;background:${pos?'var(--green)':'var(--red)'}"></div></div>
+        <div class="fund-rate ${pos?'up':'down'}">${pos?'+':''}${f.rate.toFixed(3)}%</div>
+      </div>`;
+    }).join('');
+}
+
+function buildFearGreed(){
+  const val=72;const label=val>=75?'Ganância Extrema':val>=55?'Ganância':val>=45?'Neutro':val>=25?'Medo':'Medo Extremo';
+  const color=val>=75?'var(--red)':val>=55?'var(--amber)':val>=45?'var(--muted)':'var(--blue)';
+  const history=[45,51,48,62,67,70,72];
+  document.getElementById('fg-panel').innerHTML=`
+    <div class="fear-greed">
+      <div>
+        <div class="fg-number" style="color:${color}">${val}</div>
+        <div class="fg-label" style="color:${color}">${label}</div>
+        <div style="font-size:10px;color:var(--dim);margin-top:4px">7 dias atrás: 45</div>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:var(--font-mono)">Histórico 7d</div>
+        <div style="display:flex;align-items:flex-end;gap:3px;height:40px">
+          ${history.map(v=>`<div style="flex:1;background:${v>=55?'var(--amber)':'var(--blue)'};height:${v}%;border-radius:2px 2px 0 0;opacity:0.8"></div>`).join('')}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);font-family:var(--font-mono);margin-top:2px"><span>-7d</span><span>hoje</span></div>
+      </div>
+    </div>`;
+}
+
+function buildNarratives(){
+  const items=[
+    {tag:'BULL',tc:'tag-bull',title:'BTC como reserva estratégica nacional',desc:'Pressão de ETFs institucionais e leis estaduais nos EUA impulsionam adoção soberana.'},
+    {tag:'BULL',tc:'tag-bull',title:'DeFi ressurgimento — TVL em alta',desc:'Protocolos de restaking (EigenLayer, ether.fi) dominam fluxo de capital. ETH beneficia diretamente.'},
+    {tag:'NEUTRAL',tc:'tag-neutral',title:'IA + Cripto convergência',desc:'Tokens de agentes de IA (Virtuals, ai16z) ganham tração mas carecem de fundamentos sólidos.'},
+    {tag:'BEAR',tc:'tag-bear',title:'Incerteza macro — Fed hawkish',desc:'Dados de inflação acima do esperado adiaram cortes de juros. Correlação com risco ainda presente.'},
+    {tag:'BULL',tc:'tag-bull',title:'RWA tokenização acelera',desc:'BlackRock e Franklin Templeton ampliam produtos on-chain. BUIDL ultrapassa $500M em AUM.'}
+  ];
+  document.getElementById('narratives-panel').innerHTML=items.map(n=>`
+    <div class="narrative-item">
+      <div class="narr-header"><span class="narr-tag ${n.tc}">${n.tag}</span><span class="narr-title">${n.title}</span></div>
+      <div class="narr-desc">${n.desc}</div>
+    </div>`).join('');
+}
+
+async function loadNews(){
+  const fallback={
+    macro:[
+      {title:'Fed mantém juros; Powell sinaliza cautela com inflação persistente',time:'2h atrás'},
+      {title:'S&P 500 atinge nova máxima histórica; techs lideram ganhos',time:'4h atrás'},
+      {title:'China anuncia estímulo fiscal de $300B; yuan se valoriza',time:'6h atrás'}
+    ],
+    defi:[
+      {title:'Uniswap V4 lança hooks customizados; TVL sobe 18% em 24h',time:'1h atrás'},
+      {title:'EigenLayer atinge 4M ETH em restaking; rewards ativados',time:'3h atrás'},
+      {title:'Aave V3 expande para Scroll; $200M em depósitos no lançamento',time:'5h atrás'}
+    ],
+    reg:[
+      {title:'SEC aprova novos ETFs de ETH com staking; decisão histórica',time:'3h atrás'},
+      {title:'UE implementa regulação MiCA; exchanges aceleram compliance',time:'7h atrás'},
+      {title:'Senado americano avança em projeto de lei de stablecoins',time:'9h atrás'}
+    ],
+    onchain:[
+      {title:'Baleia move 5.200 BTC de exchange; preço reage positivamente',time:'30min atrás'},
+      {title:'Exchange outflows de BTC atingem máximo desde novembro 2024',time:'2h atrás'},
+      {title:'Endereços únicos de ETH atingem novo recorde histórico',time:'5h atrás'}
+    ]
+  };
+  try{
+    const txt=await callAnthropicMCP(
+      'Fetch latest 12 crypto news. Categorize as macro, defi, reg, or onchain. Return ONLY JSON: {"macro":[{"title":string,"time":string}],"defi":[...],"reg":[...],"onchain":[...]} — 3 per category.',
+      [{type:'url',url:'https://mcp.coindesk.com/mcp',name:'coindesk'}]
+    );
+    const parsed=parseJSON(txt);
+    if(parsed&&(parsed.macro||parsed.defi)){
+      newsData={
+        macro:(parsed.macro||[]),defi:(parsed.defi||[]),
+        reg:(parsed.reg||parsed.regulacao||[]),onchain:(parsed.onchain||[])
+      };
+      addStatus('News','ok');
+    } else throw new Error();
+  }catch(e){newsData=fallback;addStatus('News~','mock');}
+  renderNews();
+}
+
+function renderNews(){
+  const items=newsData[activeTab]||[];
+  const catMap={macro:['cat-macro','MACRO'],defi:['cat-defi','DEFI'],reg:['cat-reg','REGULAÇÃO'],onchain:['cat-onchain','ON-CHAIN']};
+  const [cls,label]=catMap[activeTab]||['cat-macro','MACRO'];
+  document.getElementById('news-content').innerHTML=items.map(n=>`
+    <div class="news-item">
+      <div class="news-meta"><span class="news-cat ${cls}">${label}</span><span class="news-time">${n.time||'—'}</span></div>
+      <div class="news-title">${n.title}</div>
+    </div>`).join('')||'<div style="color:var(--dim);font-size:11px;font-family:var(--font-mono)">Sem notícias disponíveis</div>';
+}
+
+function switchTab(tab){
+  activeTab=tab;
+  const labels={macro:'MACRO',defi:'DeFi',reg:'REGULAÇÃO',onchain:'ON-CHAIN'};
+  document.querySelectorAll('.tab').forEach(t=>{t.classList.toggle('active',t.textContent===labels[tab]);});
+  renderNews();
+}
+
+function buildUnlocks(){
+  const data=[
+    {sym:'APT',date:'Jun 12',amount:'11.3M',usd:'$62M',impact:85,color:'var(--red)'},
+    {sym:'OP',date:'Jun 15',amount:'24.2M',usd:'$48M',impact:60,color:'var(--amber)'},
+    {sym:'ARB',date:'Jun 20',amount:'92.6M',usd:'$115M',impact:90,color:'var(--red)'},
+    {sym:'SUI',date:'Jun 23',amount:'63.1M',usd:'$89M',impact:75,color:'var(--amber)'},
+    {sym:'DYDX',date:'Jul 01',amount:'8.7M',usd:'$22M',impact:40,color:'var(--green)'}
+  ];
+  document.getElementById('unlocks-panel').innerHTML=data.map(u=>`
+    <div class="unlock-item">
+      <div><div class="unlock-sym">${u.sym}</div><div class="unlock-date">${u.date}</div></div>
+      <div style="flex:1;margin:0 10px">
+        <div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden">
+          <div style="width:${u.impact}%;height:100%;background:${u.color};border-radius:2px"></div>
+        </div>
+        <div style="font-size:9px;color:var(--dim);font-family:var(--font-mono);margin-top:2px">impacto estimado</div>
+      </div>
+      <div style="text-align:right">
+        <div class="unlock-amount" style="color:${u.color}">${u.amount}</div>
+        <div class="unlock-usd">${u.usd}</div>
+      </div>
+    </div>`).join('');
+}
+
+function buildWhales(){
+  const data=[
+    {type:'COMPRA',tc:'wtype-buy',ago:'12min',desc:'Endereço 0x8f3a... comprou 820 ETH na Binance',val:'$2.9M'},
+    {type:'MOVE',tc:'wtype-move',ago:'28min',desc:'5.200 BTC saíram de Coinbase para cold wallet',val:'$541M'},
+    {type:'VENDA',tc:'wtype-sell',ago:'1h',desc:'Jump Trading vendeu 12.400 SOL em OTC privado',val:'$1.8M'},
+    {type:'COMPRA',tc:'wtype-buy',ago:'2h',desc:'MicroStrategy adicionou +214 BTC ao tesouro',val:'$22.2M'},
+    {type:'MOVE',tc:'wtype-move',ago:'3h',desc:'Ethereum Foundation moveu 1.700 ETH',val:'$5.9M'},
+    {type:'COMPRA',tc:'wtype-buy',ago:'4h',desc:'Fundo soberano de Abu Dhabi divulgou posição em ETF BTC',val:'$437M'}
+  ];
+  document.getElementById('whales-panel').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:0">${data.map(w=>`
+    <div class="whale-item">
+      <div class="whale-header"><span class="whale-type ${w.tc}">${w.type}</span><span class="whale-ago">${w.ago}</span></div>
+      <div class="whale-desc">${w.desc}</div>
+      <div class="whale-val">${w.val}</div>
+    </div>`).join('')}</div>`;
+}
+
+async function init(){
+  document.getElementById('ts').textContent=nowStr();
+  setInterval(()=>{document.getElementById('ts').textContent=nowStr();},1000);
+  buildFunding();buildFearGreed();buildNarratives();buildUnlocks();buildWhales();buildRSI();buildMA(104000);
+  await Promise.all([loadCryptoPrices(),loadTradPrices(),loadNews()]);
+}
+
+init();
+</script>
+</body>
+</html>
